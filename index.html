@@ -61,6 +61,12 @@
             const [durationMinutes, setDurationMinutes] = useState(20);
             const [timeLeft, setTimeLeft] = useState(20 * 60);
             const [isRunning, setIsRunning] = useState(false);
+            
+            // Rep Tracker States
+            const [count1, setCount1] = useState(0);
+            const [count2, setCount2] = useState(0);
+            const [count3, setCount3] = useState(0);
+
             const wakeLockRef = useRef(null);
 
             // Audio Announcement Helper
@@ -178,6 +184,9 @@
                 setLoad(null);
                 setTimeLeft(durationMinutes * 60);
                 setIsRunning(false);
+                setCount1(0);
+                setCount2(0);
+                setCount3(0);
                 if ('speechSynthesis' in window) {
                     window.speechSynthesis.cancel();
                 }
@@ -279,6 +288,63 @@
                                     >
                                         <RotateCcw size={20} />
                                     </button>
+                                </div>
+
+                                {/* Rep Tracker */}
+                                <div className="w-full max-w-sm mt-8 border-t border-zinc-800/80 pt-8 animate-slide-in">
+                                    <h3 className="text-center text-[10px] tracking-widest text-zinc-500 font-bold uppercase mb-5">Ladder Tracker</h3>
+                                    
+                                    <div className="grid grid-cols-3 gap-3">
+                                        {/* 1 Rep Button */}
+                                        <div className="flex flex-col items-center">
+                                            <span className="text-[10px] text-[#ff6300] font-bold uppercase tracking-wider mb-2">1 Rep</span>
+                                            <button 
+                                                onClick={() => setCount1(c => c + 1)} 
+                                                className="w-full aspect-square rounded bg-[#1a1a1a] border border-[#2a2a2a] hover:border-[#ff6300] text-3xl font-black text-white flex items-center justify-center transition-all active:scale-95 shadow-sm"
+                                            >
+                                                {count1}
+                                            </button>
+                                            <button onClick={() => setCount1(c => Math.max(0, c - 1))} className="mt-2 text-zinc-600 hover:text-zinc-400 p-2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                            </button>
+                                        </div>
+
+                                        {/* 2 Reps Button */}
+                                        <div className="flex flex-col items-center">
+                                            <span className="text-[10px] text-[#ff6300] font-bold uppercase tracking-wider mb-2">2 Reps</span>
+                                            <button 
+                                                onClick={() => setCount2(c => c + 1)} 
+                                                className="w-full aspect-square rounded bg-[#1a1a1a] border border-[#2a2a2a] hover:border-[#ff6300] text-3xl font-black text-white flex items-center justify-center transition-all active:scale-95 shadow-sm"
+                                            >
+                                                {count2}
+                                            </button>
+                                            <button onClick={() => setCount2(c => Math.max(0, c - 1))} className="mt-2 text-zinc-600 hover:text-zinc-400 p-2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                            </button>
+                                        </div>
+
+                                        {/* 3 Reps Button */}
+                                        <div className="flex flex-col items-center">
+                                            <span className="text-[10px] text-[#ff6300] font-bold uppercase tracking-wider mb-2">3 Reps</span>
+                                            <button 
+                                                onClick={() => setCount3(c => c + 1)} 
+                                                className="w-full aspect-square rounded bg-[#1a1a1a] border border-[#2a2a2a] hover:border-[#ff6300] text-3xl font-black text-white flex items-center justify-center transition-all active:scale-95 shadow-sm"
+                                            >
+                                                {count3}
+                                            </button>
+                                            <button onClick={() => setCount3(c => Math.max(0, c - 1))} className="mt-2 text-zinc-600 hover:text-zinc-400 p-2">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Total Auto-Calculation */}
+                                    <div className="mt-4 bg-[#ff6300]/10 border border-[#ff6300]/30 rounded-md p-4 text-center flex flex-col items-center justify-center">
+                                        <div className="text-[10px] uppercase tracking-widest text-[#ff6300] font-bold mb-1">Total Reps (Per Movement)</div>
+                                        <div className="text-4xl font-black text-white drop-shadow-md">
+                                            {(count1 * 1) + (count2 * 2) + (count3 * 3)}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         )}
