@@ -7,13 +7,6 @@
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- React & ReactDOM -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-    
-    <!-- Babel for in-browser JSX compilation -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
         /* Custom animations */
@@ -27,423 +20,476 @@
         
         /* Prevent pull-to-refresh on mobile */
         body { overscroll-behavior-y: contain; }
+        
+        /* Hidden utility class */
+        .hide { display: none !important; }
     </style>
 </head>
-<body class="bg-black">
-    <div id="root"></div>
+<body class="bg-black text-zinc-300 font-sans selection:bg-[#ff6300]/30 overflow-x-hidden min-h-screen">
 
-    <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+    <div class="flex flex-col items-center py-10 px-4 w-full h-full min-h-screen">
+        
+        <!-- Brand Header -->
+        <div class="mb-10 text-center w-full max-w-lg">
+            <h1 class="text-4xl md:text-5xl font-black italic tracking-wide flex justify-center items-center">
+                <span class="text-white">NLC</span>
+                <span class="text-[#ff6300] ml-2">PERFORMANCE</span>
+            </h1>
+            <div id="subtitle" class="text-zinc-500 tracking-[0.4em] text-xs md:text-sm mt-3 font-semibold uppercase">
+                20 Min DFW Timer
+            </div>
+            <div class="h-px w-full bg-gradient-to-r from-transparent via-zinc-800 to-transparent mt-6"></div>
+        </div>
 
-        // --- SVG Icon Components ---
-        const Play = ({ size = 24, className = "" }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-        );
-        
-        const Pause = ({ size = 24, className = "" }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
-        );
-        
-        const RotateCcw = ({ size = 24, className = "" }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-        );
-        
-        const Dices = ({ size = 24, className = "" }) => (
-            <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="12" height="12" x="2" y="10" rx="2" ry="2"></rect><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"></path><path d="M6 18h.01"></path><path d="M10 14h.01"></path><path d="M15 6h.01"></path><path d="M18 9h.01"></path></svg>
-        );
-
-        // --- Main Application Component ---
-        function NLCPerformanceTimer() {
-            // App States: 'idle' | 'rolling' | 'rolled' | 'active' | 'complete'
-            const [phase, setPhase] = useState('idle');
-            const [equip, setEquip] = useState(null);
-            const [load, setLoad] = useState(null);
-            const [durationMinutes, setDurationMinutes] = useState(20);
-            const [timeLeft, setTimeLeft] = useState(20 * 60);
-            const [isRunning, setIsRunning] = useState(false);
+        <!-- Main Content Area -->
+        <div class="w-full max-w-lg flex-1 flex flex-col justify-center">
             
-            // Rep Tracker States
-            const [count1, setCount1] = useState(0);
-            const [count2, setCount2] = useState(0);
-            const [count3, setCount3] = useState(0);
+            <!-- Duration Toggle (Visible in Idle) -->
+            <div id="duration-toggle" class="flex bg-zinc-900 rounded-sm p-1 mb-6 border border-zinc-800">
+                <button id="btn-20-min" onclick="setDuration(20)" class="flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-all rounded-sm bg-[#ff6300] text-black shadow-md">
+                    20 Min (Grappler)
+                </button>
+                <button id="btn-30-min" onclick="setDuration(30)" class="flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-all rounded-sm text-zinc-500 hover:text-zinc-300">
+                    30 Min (Standard)
+                </button>
+            </div>
 
-            const wakeLockRef = useRef(null);
-
-            // Audio Announcement Helper
-            const announce = (text) => {
-                if ('speechSynthesis' in window) {
-                    // Cancel any ongoing speech to ensure immediate playback
-                    window.speechSynthesis.cancel();
-                    const utterance = new SpeechSynthesisUtterance(text);
-                    utterance.rate = 1.0;
-                    utterance.pitch = 0.9;
-                    window.speechSynthesis.speak(utterance);
-                }
-            };
-
-            // Timer Logic & Audio Alerts
-            useEffect(() => {
-                let timer;
-                if (isRunning && timeLeft > 0) {
-                    timer = setInterval(() => {
-                        setTimeLeft((prev) => {
-                            const newTime = prev - 1;
-                            
-                            // 5 Minute Warning
-                            if (newTime === 300) {
-                                announce("Five minutes remaining. Push the pace.");
-                            }
-                            
-                            return newTime;
-                        });
-                    }, 1000);
-                } else if (timeLeft === 0 && isRunning) {
-                    setIsRunning(false);
-                    setPhase('complete');
-                    announce("Protocol Complete. Outstanding work.");
-                }
-                return () => clearInterval(timer);
-            }, [isRunning, timeLeft]);
-
-            // Screen Wake Lock Logic
-            useEffect(() => {
-                const requestWakeLock = async () => {
-                    try {
-                        if ('wakeLock' in navigator && isRunning) {
-                            wakeLockRef.current = await navigator.wakeLock.request('screen');
-                        }
-                    } catch (err) {
-                        // Silently catch the error. Browsers (especially in iframes) often block
-                        // wake lock due to Permissions Policy. The app continues to run normally.
-                    }
-                };
-
-                if (isRunning) {
-                    requestWakeLock();
-                } else if (wakeLockRef.current) {
-                    wakeLockRef.current.release().catch(() => {}).then(() => {
-                        wakeLockRef.current = null;
-                    });
-                }
-
-                // Re-acquire lock if user switches tabs and comes back while running
-                const handleVisibility = () => {
-                    if (document.visibilityState === 'visible' && isRunning) requestWakeLock();
-                };
-                document.addEventListener('visibilitychange', handleVisibility);
-
-                return () => {
-                    document.removeEventListener('visibilitychange', handleVisibility);
-                    if (wakeLockRef.current) {
-                        wakeLockRef.current.release().catch(() => {});
-                        wakeLockRef.current = null;
-                    }
-                };
-            }, [isRunning]);
-
-            // Update timer when duration changes in idle phase
-            useEffect(() => {
-                if (phase === 'idle') setTimeLeft(durationMinutes * 60);
-            }, [durationMinutes, phase]);
-
-            // Stochastic Roll Logic
-            const handleInitialize = () => {
-                if (phase === 'idle' || phase === 'rolled') {
-                    setPhase('rolling');
-                    let counter = 0;
-                    
-                    const interval = setInterval(() => {
-                        setEquip(Math.random() > 0.5 ? 'single' : 'double');
-                        const r2 = Math.random();
-                        setLoad(r2 < 0.33 ? 'light' : r2 < 0.66 ? '6rm' : '3rm');
-                        
-                        counter++;
-                        if (counter > 12) {
-                            clearInterval(interval);
-                            // Final Mathematical Roll
-                            const roll1 = Math.floor(Math.random() * 6) + 1;
-                            const roll2 = Math.floor(Math.random() * 6) + 1;
-                            
-                            setEquip(roll1 <= 3 ? 'single' : 'double');
-                            setLoad(roll2 <= 2 ? 'light' : roll2 <= 4 ? '6rm' : '3rm');
-                            setPhase('rolled');
-                        }
-                    }, 80);
-                }
-            };
-
-            const startWorkout = () => {
-                setPhase('active');
-                setIsRunning(true);
-                announce(`Commencing ${durationMinutes} minute protocol. Let's go.`);
-            };
-
-            const resetSystem = () => {
-                setPhase('idle');
-                setEquip(null);
-                setLoad(null);
-                setTimeLeft(durationMinutes * 60);
-                setIsRunning(false);
-                setCount1(0);
-                setCount2(0);
-                setCount3(0);
-                if ('speechSynthesis' in window) {
-                    window.speechSynthesis.cancel();
-                }
-            };
-
-            const formatTime = (seconds) => {
-                const m = Math.floor(seconds / 60).toString().padStart(2, '0');
-                const s = (seconds % 60).toString().padStart(2, '0');
-                return `${m}:${s}`;
-            };
-
-            // Helper to determine box styling based on state
-            const getBoxStyle = (isActive) => {
-                if (phase === 'idle') return "border-zinc-800 text-zinc-700 bg-transparent";
-                if (phase === 'rolling') return isActive ? "border-zinc-600 text-zinc-500 bg-zinc-900" : "border-zinc-800 text-zinc-700 bg-transparent";
-                return isActive 
-                    ? "border-[#ff6300] text-[#ff6300] bg-[#ff6300]/5 shadow-[0_0_15px_rgba(255,99,0,0.15)]" 
-                    : "border-zinc-800 text-zinc-800 bg-transparent";
-            };
-
-            return (
-                <div className="min-h-screen bg-black text-zinc-300 font-sans flex flex-col items-center py-10 px-4 selection:bg-[#ff6300]/30 overflow-hidden">
-                    
-                    {/* Brand Header */}
-                    <div className="mb-10 text-center w-full max-w-lg">
-                        <h1 className="text-4xl md:text-5xl font-black italic tracking-wide flex justify-center items-center">
-                            <span className="text-white">NLC</span>
-                            <span className="text-[#ff6300] ml-2">PERFORMANCE</span>
-                        </h1>
-                        <div className="text-zinc-500 tracking-[0.4em] text-xs md:text-sm mt-3 font-semibold uppercase">
-                            {phase === 'active' ? 'Protocol Engaged' : `${durationMinutes} Min DFW Timer`}
+            <!-- Dice Section -->
+            <div id="dice-section" class="space-y-8 animate-fade-in">
+                <div>
+                    <label class="text-[10px] uppercase tracking-widest text-zinc-400 font-bold mb-3 block">
+                        Equipment Configuration (Dice 1)
+                    </label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div id="box-single" class="flex flex-col items-center justify-center p-4 border rounded-sm transition-all duration-300 border-zinc-800 text-zinc-700">
+                            <span class="font-bold text-sm tracking-wider uppercase">Single Bell</span>
+                            <span class="text-[10px] mt-1 opacity-60">Roll 1-3</span>
                         </div>
-                        <div className="h-px w-full bg-gradient-to-r from-transparent via-zinc-800 to-transparent mt-6"></div>
-                    </div>
-
-                    {/* Main Content Area */}
-                    <div className="w-full max-w-lg flex-1 flex flex-col justify-center">
-                        
-                        {/* Dice Section */}
-                        {['idle', 'rolling', 'rolled'].includes(phase) && (
-                            <div className="space-y-8 animate-fade-in">
-                                {/* Equipment Roll Row */}
-                                <div>
-                                    <label className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold mb-3 block">
-                                        Equipment Configuration (Dice 1)
-                                    </label>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className={`flex flex-col items-center justify-center p-4 border rounded-sm transition-all duration-300 ${getBoxStyle(equip === 'single')}`}>
-                                            <span className="font-bold text-sm tracking-wider uppercase">Single Bell</span>
-                                            <span className="text-[10px] mt-1 opacity-60">Roll 1-3</span>
-                                        </div>
-                                        <div className={`flex flex-col items-center justify-center p-4 border rounded-sm transition-all duration-300 ${getBoxStyle(equip === 'double')}`}>
-                                            <span className="font-bold text-sm tracking-wider uppercase">Double Bell</span>
-                                            <span className="text-[10px] mt-1 opacity-60">Roll 4-6</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Load Roll Row */}
-                                <div>
-                                    <label className="text-[10px] uppercase tracking-widest text-zinc-400 font-bold mb-3 block">
-                                        Load Intensity (Dice 2)
-                                    </label>
-                                    <div className="grid grid-cols-3 gap-3">
-                                        <div className={`flex flex-col items-center justify-center p-4 border rounded-sm transition-all duration-300 ${getBoxStyle(load === 'light')}`}>
-                                            <span className="font-bold text-sm tracking-wider uppercase">Light</span>
-                                            <span className="text-[10px] mt-1 opacity-60">Roll 1-2</span>
-                                        </div>
-                                        <div className={`flex flex-col items-center justify-center p-4 border rounded-sm transition-all duration-300 ${getBoxStyle(load === '6rm')}`}>
-                                            <span className="font-bold text-sm tracking-wider uppercase">6 RM</span>
-                                            <span className="text-[10px] mt-1 opacity-60">Roll 3-4</span>
-                                        </div>
-                                        <div className={`flex flex-col items-center justify-center p-4 border rounded-sm transition-all duration-300 ${getBoxStyle(load === '3rm')}`}>
-                                            <span className="font-bold text-sm tracking-wider uppercase">3 RM</span>
-                                            <span className="text-[10px] mt-1 opacity-60">Roll 5-6</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Active Timer View */}
-                        {['active', 'complete'].includes(phase) && (
-                            <div className="flex flex-col items-center justify-center py-4 animate-zoom-in">
-                                <div className="text-[#ff6300] font-black text-8xl md:text-9xl tracking-tighter tabular-nums drop-shadow-[0_0_25px_rgba(255,99,0,0.3)]">
-                                    {formatTime(timeLeft)}
-                                </div>
-                                
-                                <div className="mt-8 mb-4 flex items-center justify-center gap-6">
-                                    <button 
-                                        onClick={() => setIsRunning(!isRunning)}
-                                        className="w-16 h-16 rounded-full border-2 border-[#ff6300] flex items-center justify-center text-[#ff6300] hover:bg-[#ff6300] hover:text-black transition-all shadow-[0_0_15px_rgba(255,99,0,0.2)]"
-                                    >
-                                        {isRunning ? <Pause size={28} className="fill-current" /> : <Play size={28} className="fill-current ml-1" />}
-                                    </button>
-                                    <button 
-                                        onClick={resetSystem}
-                                        className="w-12 h-12 rounded-full border border-zinc-700 flex items-center justify-center text-zinc-500 hover:text-white hover:border-white transition-all"
-                                    >
-                                        <RotateCcw size={20} />
-                                    </button>
-                                </div>
-
-                                {/* Rep Tracker */}
-                                <div className="w-full max-w-sm mt-8 border-t border-zinc-800/80 pt-8 animate-slide-in">
-                                    <h3 className="text-center text-[10px] tracking-widest text-zinc-500 font-bold uppercase mb-5">Ladder Tracker</h3>
-                                    
-                                    <div className="grid grid-cols-3 gap-3">
-                                        {/* 1 Rep Button */}
-                                        <div className="flex flex-col items-center">
-                                            <span className="text-[10px] text-[#ff6300] font-bold uppercase tracking-wider mb-2">1 Rep</span>
-                                            <button 
-                                                onClick={() => setCount1(c => c + 1)} 
-                                                className="w-full aspect-square rounded bg-[#1a1a1a] border border-[#2a2a2a] hover:border-[#ff6300] text-3xl font-black text-white flex items-center justify-center transition-all active:scale-95 shadow-sm"
-                                            >
-                                                {count1}
-                                            </button>
-                                            <button onClick={() => setCount1(c => Math.max(0, c - 1))} className="mt-2 text-zinc-600 hover:text-zinc-400 p-2">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                            </button>
-                                        </div>
-
-                                        {/* 2 Reps Button */}
-                                        <div className="flex flex-col items-center">
-                                            <span className="text-[10px] text-[#ff6300] font-bold uppercase tracking-wider mb-2">2 Reps</span>
-                                            <button 
-                                                onClick={() => setCount2(c => c + 1)} 
-                                                className="w-full aspect-square rounded bg-[#1a1a1a] border border-[#2a2a2a] hover:border-[#ff6300] text-3xl font-black text-white flex items-center justify-center transition-all active:scale-95 shadow-sm"
-                                            >
-                                                {count2}
-                                            </button>
-                                            <button onClick={() => setCount2(c => Math.max(0, c - 1))} className="mt-2 text-zinc-600 hover:text-zinc-400 p-2">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                            </button>
-                                        </div>
-
-                                        {/* 3 Reps Button */}
-                                        <div className="flex flex-col items-center">
-                                            <span className="text-[10px] text-[#ff6300] font-bold uppercase tracking-wider mb-2">3 Reps</span>
-                                            <button 
-                                                onClick={() => setCount3(c => c + 1)} 
-                                                className="w-full aspect-square rounded bg-[#1a1a1a] border border-[#2a2a2a] hover:border-[#ff6300] text-3xl font-black text-white flex items-center justify-center transition-all active:scale-95 shadow-sm"
-                                            >
-                                                {count3}
-                                            </button>
-                                            <button onClick={() => setCount3(c => Math.max(0, c - 1))} className="mt-2 text-zinc-600 hover:text-zinc-400 p-2">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    {/* Total Auto-Calculation */}
-                                    <div className="mt-4 bg-[#ff6300]/10 border border-[#ff6300]/30 rounded-md p-4 text-center flex flex-col items-center justify-center">
-                                        <div className="text-[10px] uppercase tracking-widest text-[#ff6300] font-bold mb-1">Total Reps (Per Movement)</div>
-                                        <div className="text-4xl font-black text-white drop-shadow-md">
-                                            {(count1 * 1) + (count2 * 2) + (count3 * 3)}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Execution Instructions (Visible when rolled OR active) */}
-                        {['rolled', 'active'].includes(phase) && (
-                            <div className="mt-8 animate-slide-in">
-                                <div className="p-5 border border-[#ff6300]/30 bg-[#ff6300]/10 rounded-md shadow-[0_0_20px_rgba(255,99,0,0.05)]">
-                                    <h3 className="text-[#ff6300] font-mono font-bold uppercase tracking-widest text-sm mb-4 flex items-center gap-2">
-                                        <Dices size={16} /> Tactical Prescription
-                                    </h3>
-                                    
-                                    <div className="space-y-3 font-mono text-sm">
-                                        <div className="bg-black/40 p-3 rounded border border-zinc-800/50">
-                                            <span className="text-[#ff6300] font-bold tracking-wider uppercase text-[10px] block mb-1">Ladder Structure</span>
-                                            <span className="text-zinc-200">1 rep, then 2 reps, then 3 reps. Repeat 1-2-3 continuously until time expires.</span>
-                                        </div>
-                                        
-                                        <div className="bg-black/40 p-3 rounded border border-zinc-800/50">
-                                            <span className="text-[#ff6300] font-bold tracking-wider uppercase text-[10px] block mb-1">Exercise Complex</span>
-                                            <span className="text-zinc-200">
-                                                {equip === 'single' 
-                                                    ? "Clean & Press (L), Front Squat (L) -> Switch -> Clean & Press (R), Front Squat (R)" 
-                                                    : "Double Clean & Press -> Double Front Squat"}
-                                            </span>
-                                        </div>
-                                        
-                                        <div className="bg-black/40 p-3 rounded border border-zinc-800/50">
-                                            <span className="text-[#ff6300] font-bold tracking-wider uppercase text-[10px] block mb-1">Load Target: {load === 'light' ? 'Light' : load === '6rm' ? '6RM' : '3RM'}</span>
-                                            <span className="text-zinc-400">
-                                                {load === 'light' && "Focus on speed & technical precision. Move the bell as if it's heavy."}
-                                                {load === '6rm' && "Strength-endurance focus. Heavy enough to respect, light enough to maintain volume."}
-                                                {load === '3rm' && "Absolute force. High tension, long rests. Terminate set if technique falters."}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                    </div>
-
-                    {/* Primary Action Button Area */}
-                    {phase !== 'active' && phase !== 'complete' && (
-                        <div className="w-full max-w-lg mt-8">
-                            
-                            {/* Duration Toggle */}
-                            {phase === 'idle' && (
-                                <div className="flex bg-zinc-900 rounded-sm p-1 mb-6 border border-zinc-800">
-                                    <button 
-                                        onClick={() => setDurationMinutes(20)}
-                                        className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-all rounded-sm ${durationMinutes === 20 ? 'bg-[#ff6300] text-black shadow-md' : 'text-zinc-500 hover:text-zinc-300'}`}
-                                    >
-                                        20 Min (Grappler)
-                                    </button>
-                                    <button 
-                                        onClick={() => setDurationMinutes(30)}
-                                        className={`flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-all rounded-sm ${durationMinutes === 30 ? 'bg-[#ff6300] text-black shadow-md' : 'text-zinc-500 hover:text-zinc-300'}`}
-                                    >
-                                        30 Min (Standard)
-                                    </button>
-                                </div>
-                            )}
-
-                            {phase === 'idle' ? (
-                                <button 
-                                    onClick={handleInitialize}
-                                    className="w-full bg-[#1a1a1a] hover:bg-[#222] border border-[#2a2a2a] text-zinc-500 hover:text-[#ff6300] uppercase tracking-widest font-bold py-5 transition-all duration-300 rounded-sm"
-                                >
-                                    Initialize System
-                                </button>
-                            ) : phase === 'rolling' ? (
-                                <button 
-                                    disabled
-                                    className="w-full bg-[#1a1a1a] border border-[#ff6300]/30 text-[#ff6300]/50 uppercase tracking-widest font-bold py-5 transition-all duration-300 rounded-sm cursor-wait"
-                                >
-                                    Calculating...
-                                </button>
-                            ) : (
-                               <button 
-                                    onClick={startWorkout}
-                                    className="w-full bg-[#ff6300] hover:bg-[#e65900] text-black shadow-[0_0_20px_rgba(255,99,0,0.4)] uppercase tracking-widest font-black py-5 transition-all duration-300 rounded-sm"
-                                >
-                                    Commence Protocol
-                                </button>
-                            )}
+                        <div id="box-double" class="flex flex-col items-center justify-center p-4 border rounded-sm transition-all duration-300 border-zinc-800 text-zinc-700">
+                            <span class="font-bold text-sm tracking-wider uppercase">Double Bell</span>
+                            <span class="text-[10px] mt-1 opacity-60">Roll 4-6</span>
                         </div>
-                    )}
-
-                    {/* Footer */}
-                    <div className="mt-12 text-[10px] tracking-[0.4em] text-zinc-600 font-bold uppercase text-center pb-8">
-                        Adapt. Recover. Master.
                     </div>
                 </div>
-            );
+
+                <div>
+                    <label class="text-[10px] uppercase tracking-widest text-zinc-400 font-bold mb-3 block">
+                        Load Intensity (Dice 2)
+                    </label>
+                    <div class="grid grid-cols-3 gap-3">
+                        <div id="box-light" class="flex flex-col items-center justify-center p-4 border rounded-sm transition-all duration-300 border-zinc-800 text-zinc-700">
+                            <span class="font-bold text-sm tracking-wider uppercase">Light</span>
+                            <span class="text-[10px] mt-1 opacity-60">Roll 1-2</span>
+                        </div>
+                        <div id="box-6rm" class="flex flex-col items-center justify-center p-4 border rounded-sm transition-all duration-300 border-zinc-800 text-zinc-700">
+                            <span class="font-bold text-sm tracking-wider uppercase">6 RM</span>
+                            <span class="text-[10px] mt-1 opacity-60">Roll 3-4</span>
+                        </div>
+                        <div id="box-3rm" class="flex flex-col items-center justify-center p-4 border rounded-sm transition-all duration-300 border-zinc-800 text-zinc-700">
+                            <span class="font-bold text-sm tracking-wider uppercase">3 RM</span>
+                            <span class="text-[10px] mt-1 opacity-60">Roll 5-6</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Timer View -->
+            <div id="timer-section" class="flex flex-col items-center justify-center py-4 animate-zoom-in hide">
+                <div id="timer-display" class="text-[#ff6300] font-black text-8xl md:text-9xl tracking-tighter tabular-nums drop-shadow-[0_0_25px_rgba(255,99,0,0.3)]">
+                    20:00
+                </div>
+                
+                <div class="mt-8 mb-4 flex items-center justify-center gap-6">
+                    <button id="btn-play-pause" onclick="toggleTimer()" class="w-16 h-16 rounded-full border-2 border-[#ff6300] flex items-center justify-center text-[#ff6300] hover:bg-[#ff6300] hover:text-black transition-all shadow-[0_0_15px_rgba(255,99,0,0.2)]">
+                        <svg id="icon-play" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        <svg id="icon-pause" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hide"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                    </button>
+                    <button onclick="resetSystem()" class="w-12 h-12 rounded-full border border-zinc-700 flex items-center justify-center text-zinc-500 hover:text-white hover:border-white transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                    </button>
+                </div>
+
+                <!-- Rep Tracker -->
+                <div class="w-full max-w-sm mt-8 border-t border-zinc-800/80 pt-8">
+                    <h3 class="text-center text-[10px] tracking-widest text-zinc-500 font-bold uppercase mb-5">Ladder Tracker</h3>
+                    
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="flex flex-col items-center">
+                            <span class="text-[10px] text-[#ff6300] font-bold uppercase tracking-wider mb-2">1 Rep</span>
+                            <button onclick="updateReps(1, 1)" class="w-full aspect-square rounded bg-[#1a1a1a] border border-[#2a2a2a] hover:border-[#ff6300] text-3xl font-black text-white flex items-center justify-center transition-all active:scale-95 shadow-sm" id="rep-1-val">0</button>
+                            <button onclick="updateReps(1, -1)" class="mt-2 text-zinc-600 hover:text-zinc-400 p-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <span class="text-[10px] text-[#ff6300] font-bold uppercase tracking-wider mb-2">2 Reps</span>
+                            <button onclick="updateReps(2, 1)" class="w-full aspect-square rounded bg-[#1a1a1a] border border-[#2a2a2a] hover:border-[#ff6300] text-3xl font-black text-white flex items-center justify-center transition-all active:scale-95 shadow-sm" id="rep-2-val">0</button>
+                            <button onclick="updateReps(2, -1)" class="mt-2 text-zinc-600 hover:text-zinc-400 p-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <span class="text-[10px] text-[#ff6300] font-bold uppercase tracking-wider mb-2">3 Reps</span>
+                            <button onclick="updateReps(3, 1)" class="w-full aspect-square rounded bg-[#1a1a1a] border border-[#2a2a2a] hover:border-[#ff6300] text-3xl font-black text-white flex items-center justify-center transition-all active:scale-95 shadow-sm" id="rep-3-val">0</button>
+                            <button onclick="updateReps(3, -1)" class="mt-2 text-zinc-600 hover:text-zinc-400 p-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 bg-[#ff6300]/10 border border-[#ff6300]/30 rounded-md p-4 text-center flex flex-col items-center justify-center">
+                        <div class="text-[10px] uppercase tracking-widest text-[#ff6300] font-bold mb-1">Total Reps (Per Movement)</div>
+                        <div id="total-reps-val" class="text-4xl font-black text-white drop-shadow-md">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Execution Instructions -->
+            <div id="prescription-section" class="mt-8 animate-slide-in hide">
+                <div class="p-5 border border-[#ff6300]/30 bg-[#ff6300]/10 rounded-md shadow-[0_0_20px_rgba(255,99,0,0.05)]">
+                    <h3 class="text-[#ff6300] font-mono font-bold uppercase tracking-widest text-sm mb-4 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"></rect><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"></path><path d="M6 18h.01"></path><path d="M10 14h.01"></path><path d="M15 6h.01"></path><path d="M18 9h.01"></path></svg> 
+                        Tactical Prescription
+                    </h3>
+                    
+                    <div class="space-y-3 font-mono text-sm">
+                        <div class="bg-black/40 p-3 rounded border border-zinc-800/50">
+                            <span class="text-[#ff6300] font-bold tracking-wider uppercase text-[10px] block mb-1">Ladder Structure</span>
+                            <span class="text-zinc-200">1 rep, then 2 reps, then 3 reps. Repeat 1-2-3 continuously until time expires.</span>
+                        </div>
+                        
+                        <div class="bg-black/40 p-3 rounded border border-zinc-800/50">
+                            <span class="text-[#ff6300] font-bold tracking-wider uppercase text-[10px] block mb-1">Exercise Complex</span>
+                            <span id="text-equip" class="text-zinc-200">...</span>
+                        </div>
+                        
+                        <div class="bg-black/40 p-3 rounded border border-zinc-800/50">
+                            <span id="text-load-title" class="text-[#ff6300] font-bold tracking-wider uppercase text-[10px] block mb-1">Load Target</span>
+                            <span id="text-load-desc" class="text-zinc-400">...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Primary Action Button -->
+        <div id="action-section" class="w-full max-w-lg mt-8">
+            <button id="btn-action" onclick="handleAction()" class="w-full bg-[#1a1a1a] hover:bg-[#222] border border-[#2a2a2a] text-zinc-500 hover:text-[#ff6300] uppercase tracking-widest font-bold py-5 transition-all duration-300 rounded-sm">
+                Initialize System
+            </button>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-12 text-[10px] tracking-[0.4em] text-zinc-600 font-bold uppercase text-center pb-8">
+            Adapt. Recover. Master.
+        </div>
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        // State
+        let state = {
+            phase: 'idle', // idle, rolling, rolled, active, complete
+            equip: null,
+            load: null,
+            durationMinutes: 20,
+            timeLeft: 20 * 60,
+            isRunning: false,
+            reps: { 1: 0, 2: 0, 3: 0 }
+        };
+
+        let timerInterval = null;
+        let wakeLock = null;
+
+        // Elements
+        const el = {
+            subtitle: document.getElementById('subtitle'),
+            durationToggle: document.getElementById('duration-toggle'),
+            btn20: document.getElementById('btn-20-min'),
+            btn30: document.getElementById('btn-30-min'),
+            diceSection: document.getElementById('dice-section'),
+            timerSection: document.getElementById('timer-section'),
+            prescriptionSection: document.getElementById('prescription-section'),
+            actionSection: document.getElementById('action-section'),
+            btnAction: document.getElementById('btn-action'),
+            timerDisplay: document.getElementById('timer-display'),
+            iconPlay: document.getElementById('icon-play'),
+            iconPause: document.getElementById('icon-pause'),
+            textEquip: document.getElementById('text-equip'),
+            textLoadTitle: document.getElementById('text-load-title'),
+            textLoadDesc: document.getElementById('text-load-desc'),
+            boxes: {
+                single: document.getElementById('box-single'),
+                double: document.getElementById('box-double'),
+                light: document.getElementById('box-light'),
+                '6rm': document.getElementById('box-6rm'),
+                '3rm': document.getElementById('box-3rm')
+            },
+            repVals: {
+                1: document.getElementById('rep-1-val'),
+                2: document.getElementById('rep-2-val'),
+                3: document.getElementById('rep-3-val'),
+                total: document.getElementById('total-reps-val')
+            }
+        };
+
+        // --- Core Functions ---
+
+        function announce(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 1.0;
+                utterance.pitch = 0.9;
+                window.speechSynthesis.speak(utterance);
+            }
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<NLCPerformanceTimer />);
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                }
+            } catch (err) {
+                // Silently ignore - some browsers block this
+            }
+        }
+
+        function releaseWakeLock() {
+            if (wakeLock !== null) {
+                wakeLock.release().catch(() => {});
+                wakeLock = null;
+            }
+        }
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible' && state.isRunning) {
+                requestWakeLock();
+            }
+        });
+
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const s = (seconds % 60).toString().padStart(2, '0');
+            return `${m}:${s}`;
+        }
+
+        function setDuration(mins) {
+            if (state.phase !== 'idle') return;
+            state.durationMinutes = mins;
+            state.timeLeft = mins * 60;
+            updateUI();
+        }
+
+        function updateReps(tier, amount) {
+            state.reps[tier] = Math.max(0, state.reps[tier] + amount);
+            updateUI();
+        }
+
+        function handleAction() {
+            if (state.phase === 'idle' || state.phase === 'rolled') {
+                startRoll();
+            } else if (state.phase === 'active' || state.phase === 'complete') {
+                // Should be hidden anyway, but just in case
+            } else if (state.phase === 'rolled_action') {
+                startWorkout();
+            }
+        }
+
+        function startRoll() {
+            state.phase = 'rolling';
+            updateUI();
+            
+            let counter = 0;
+            const rollInterval = setInterval(() => {
+                state.equip = Math.random() > 0.5 ? 'single' : 'double';
+                const r2 = Math.random();
+                state.load = r2 < 0.33 ? 'light' : r2 < 0.66 ? '6rm' : '3rm';
+                updateUI();
+                
+                counter++;
+                if (counter > 12) {
+                    clearInterval(rollInterval);
+                    // Final Math Roll
+                    const roll1 = Math.floor(Math.random() * 6) + 1;
+                    const roll2 = Math.floor(Math.random() * 6) + 1;
+                    
+                    state.equip = roll1 <= 3 ? 'single' : 'double';
+                    state.load = roll2 <= 2 ? 'light' : roll2 <= 4 ? '6rm' : '3rm';
+                    state.phase = 'rolled';
+                    
+                    // Small hack to distinguish action button state
+                    state.phase = 'rolled_action'; 
+                    updateUI();
+                }
+            }, 80);
+        }
+
+        function startWorkout() {
+            state.phase = 'active';
+            state.isRunning = true;
+            announce(`Commencing ${state.durationMinutes} minute protocol. Let's go.`);
+            requestWakeLock();
+            updateUI();
+            
+            timerInterval = setInterval(() => {
+                state.timeLeft--;
+                
+                if (state.timeLeft === 300) {
+                    announce("Five minutes remaining. Push the pace.");
+                }
+                
+                if (state.timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    state.isRunning = false;
+                    state.phase = 'complete';
+                    announce("Protocol Complete. Outstanding work.");
+                    releaseWakeLock();
+                }
+                updateUI();
+            }, 1000);
+        }
+
+        function toggleTimer() {
+            if (state.isRunning) {
+                clearInterval(timerInterval);
+                state.isRunning = false;
+                releaseWakeLock();
+            } else {
+                state.isRunning = true;
+                requestWakeLock();
+                timerInterval = setInterval(() => {
+                    state.timeLeft--;
+                    if (state.timeLeft === 300) announce("Five minutes remaining. Push the pace.");
+                    if (state.timeLeft <= 0) {
+                        clearInterval(timerInterval);
+                        state.isRunning = false;
+                        state.phase = 'complete';
+                        announce("Protocol Complete. Outstanding work.");
+                        releaseWakeLock();
+                    }
+                    updateUI();
+                }, 1000);
+            }
+            updateUI();
+        }
+
+        function resetSystem() {
+            clearInterval(timerInterval);
+            releaseWakeLock();
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            
+            state = {
+                phase: 'idle',
+                equip: null,
+                load: null,
+                durationMinutes: state.durationMinutes, // preserve last selected
+                timeLeft: state.durationMinutes * 60,
+                isRunning: false,
+                reps: { 1: 0, 2: 0, 3: 0 }
+            };
+            updateUI();
+        }
+
+        // --- UI Rendering ---
+
+        function getBoxClasses(isActive) {
+            const base = "flex flex-col items-center justify-center p-4 border rounded-sm transition-all duration-300 ";
+            if (state.phase === 'idle') return base + "border-zinc-800 text-zinc-700 bg-transparent";
+            if (state.phase === 'rolling') return base + (isActive ? "border-zinc-600 text-zinc-500 bg-zinc-900" : "border-zinc-800 text-zinc-700 bg-transparent");
+            return base + (isActive 
+                ? "border-[#ff6300] text-[#ff6300] bg-[#ff6300]/5 shadow-[0_0_15px_rgba(255,99,0,0.15)]" 
+                : "border-zinc-800 text-zinc-800 bg-transparent");
+        }
+
+        function updateUI() {
+            // Subtitle
+            el.subtitle.textContent = (state.phase === 'active' || state.phase === 'complete') 
+                ? 'Protocol Engaged' : `${state.durationMinutes} Min DFW Timer`;
+
+            // Duration Toggles
+            if (state.phase === 'idle') {
+                el.durationToggle.classList.remove('hide');
+                el.btn20.className = `flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-all rounded-sm ${state.durationMinutes === 20 ? 'bg-[#ff6300] text-black shadow-md' : 'text-zinc-500 hover:text-zinc-300'}`;
+                el.btn30.className = `flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-all rounded-sm ${state.durationMinutes === 30 ? 'bg-[#ff6300] text-black shadow-md' : 'text-zinc-500 hover:text-zinc-300'}`;
+            } else {
+                el.durationToggle.classList.add('hide');
+            }
+
+            // Dice visibility
+            if (['idle', 'rolling', 'rolled', 'rolled_action'].includes(state.phase)) {
+                el.diceSection.classList.remove('hide');
+            } else {
+                el.diceSection.classList.add('hide');
+            }
+
+            // Dice Classes
+            el.boxes.single.className = getBoxClasses(state.equip === 'single');
+            el.boxes.double.className = getBoxClasses(state.equip === 'double');
+            el.boxes.light.className = getBoxClasses(state.load === 'light');
+            el.boxes['6rm'].className = getBoxClasses(state.load === '6rm');
+            el.boxes['3rm'].className = getBoxClasses(state.load === '3rm');
+
+            // Timer & Reps visibility
+            if (['active', 'complete'].includes(state.phase)) {
+                el.timerSection.classList.remove('hide');
+                el.timerDisplay.textContent = formatTime(state.timeLeft);
+                
+                if (state.isRunning) {
+                    el.iconPlay.classList.add('hide');
+                    el.iconPause.classList.remove('hide');
+                } else {
+                    el.iconPlay.classList.remove('hide');
+                    el.iconPause.classList.add('hide');
+                }
+                
+                // Update Reps
+                el.repVals[1].textContent = state.reps[1];
+                el.repVals[2].textContent = state.reps[2];
+                el.repVals[3].textContent = state.reps[3];
+                el.repVals.total.textContent = (state.reps[1] * 1) + (state.reps[2] * 2) + (state.reps[3] * 3);
+            } else {
+                el.timerSection.classList.add('hide');
+            }
+
+            // Prescription visibility & text
+            if (['rolled_action', 'active', 'complete'].includes(state.phase)) {
+                el.prescriptionSection.classList.remove('hide');
+                
+                el.textEquip.textContent = state.equip === 'single' 
+                    ? "Clean & Press (L), Front Squat (L) -> Switch -> Clean & Press (R), Front Squat (R)" 
+                    : "Double Clean & Press -> Double Front Squat";
+                    
+                el.textLoadTitle.textContent = `Load Target: ${state.load === 'light' ? 'Light' : state.load === '6rm' ? '6RM' : '3RM'}`;
+                
+                el.textLoadDesc.textContent = state.load === 'light' 
+                    ? "Focus on speed & technical precision. Move the bell as if it's heavy."
+                    : state.load === '6rm' 
+                        ? "Strength-endurance focus. Heavy enough to respect, light enough to maintain volume."
+                        : "Absolute force. High tension, long rests. Terminate set if technique falters.";
+            } else {
+                el.prescriptionSection.classList.add('hide');
+            }
+
+            // Action Button
+            if (['active', 'complete'].includes(state.phase)) {
+                el.actionSection.classList.add('hide');
+            } else {
+                el.actionSection.classList.remove('hide');
+                if (state.phase === 'idle') {
+                    el.btnAction.className = "w-full bg-[#1a1a1a] hover:bg-[#222] border border-[#2a2a2a] text-zinc-500 hover:text-[#ff6300] uppercase tracking-widest font-bold py-5 transition-all duration-300 rounded-sm";
+                    el.btnAction.textContent = "Initialize System";
+                    el.btnAction.disabled = false;
+                } else if (state.phase === 'rolling') {
+                    el.btnAction.className = "w-full bg-[#1a1a1a] border border-[#ff6300]/30 text-[#ff6300]/50 uppercase tracking-widest font-bold py-5 transition-all duration-300 rounded-sm cursor-wait";
+                    el.btnAction.textContent = "Calculating...";
+                    el.btnAction.disabled = true;
+                } else if (state.phase === 'rolled_action') {
+                    el.btnAction.className = "w-full bg-[#ff6300] hover:bg-[#e65900] text-black shadow-[0_0_20px_rgba(255,99,0,0.4)] uppercase tracking-widest font-black py-5 transition-all duration-300 rounded-sm";
+                    el.btnAction.textContent = "Commence Protocol";
+                    el.btnAction.disabled = false;
+                }
+            }
+        }
+
+        // Initialize UI on load
+        updateUI();
+
     </script>
 </body>
 </html>
