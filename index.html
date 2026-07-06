@@ -115,9 +115,41 @@
                     
                     <div class="grid grid-cols-3 gap-3">
                         <div class="flex flex-col items-center">
-                            <span class="text-[10px] text-[#ff6300] font-bold uppercase tracking-wider mb-2">1 Rep</span>
+                            <span class="text-[10px] text-[#ff6300] font-bold uppercase tracking-wider mb-2 text-center">1 Rep<br/>Ladder</span>
                             <button onclick="updateReps(1, 1)" class="w-full aspect-square rounded bg-[#1a1a1a] border border-[#2a2a2a] hover:border-[#ff6300] text-3xl font-black text-white flex items-center justify-center transition-all active:scale-95 shadow-sm" id="rep-1-val">0</button>
                             <button onclick="updateReps(1, -1)" class="mt-2 text-zinc-600 hover:text-zinc-400 p-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <span class="text-[10px] text-[#ff6300] font-bold uppercase tracking-wider mb-2 text-center">2 Rep<br/>Ladder</span>
+                            <button onclick="updateReps(2, 1)" class="w-full aspect-square rounded bg-[#1a1a1a] border border-[#2a2a2a] hover:border-[#ff6300] text-3xl font-black text-white flex items-center justify-center transition-all active:scale-95 shadow-sm" id="rep-2-val">0</button>
+                            <button onclick="updateReps(2, -1)" class="mt-2 text-zinc-600 hover:text-zinc-400 p-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <span class="text-[10px] text-[#ff6300] font-bold uppercase tracking-wider mb-2 text-center">3 Rep<br/>Ladder</span>
+                            <button onclick="updateReps(3, 1)" class="w-full aspect-square rounded bg-[#1a1a1a] border border-[#2a2a2a] hover:border-[#ff6300] text-3xl font-black text-white flex items-center justify-center transition-all active:scale-95 shadow-sm" id="rep-3-val">0</button>
+                            <button onclick="updateReps(3, -1)" class="mt-2 text-zinc-600 hover:text-zinc-400 p-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 bg-[#ff6300]/10 border border-[#ff6300]/30 rounded-md p-4 text-center flex flex-col items-center justify-center">
+                        <div class="text-[10px] uppercase tracking-widest text-[#ff6300] font-bold mb-1">Total Reps (Combined)</div>
+                        <div id="total-reps-val" class="text-4xl font-black text-white drop-shadow-md">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Execution Instructions -->
+            <div id="prescription-section" class="mt-8 animate-slide-in hide">
+                <div class="p-5 border border-[#ff6300]/30 bg-[#ff6300]/10 rounded-md shadow-[0_0_20px_rgba(255,99,0,0.05)]">
+                    <h3 class="text-[#ff6300] font-mono font-bold uppercase tracking-widest text-sm mb-4 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"></rect><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"></path><path d="M6 18h.01"></path><path d="M10 14h.01"></path><path d="M15 6h.01"></path><path d="M18 9h.01"></path></svg> 
+                        Tactical Prescription
+                    </h3>
+                    
+                    <div class="space-y-3 font-mono text-sm">
+                        <div class="bg-black/40 p-3 rounded border border-zinc-800/50">
+                            <span class="text-[#ff6300] font-bold tracking-wider uppercase text-[10px] block mb-1">Ladder Structure</span>
+                            <span class="text-zinc-200">1 rep ladder, then 2 rep ladder, then 3 rep ladder. Repeat 1-2-3 continuously until time expires.</span>
                         </div>
                         <div class="flex flex-col items-center">
                             <span class="text-[10px] text-[#ff6300] font-bold uppercase tracking-wider mb-2">2 Reps</span>
@@ -442,7 +474,8 @@
                 el.repVals[1].textContent = state.reps[1];
                 el.repVals[2].textContent = state.reps[2];
                 el.repVals[3].textContent = state.reps[3];
-                el.repVals.total.textContent = (state.reps[1] * 1) + (state.reps[2] * 2) + (state.reps[3] * 3);
+                // 1 rep ladder = 2 reps, 2 rep ladder = 4 reps, 3 rep ladder = 6 reps
+                el.repVals.total.textContent = (state.reps[1] * 2) + (state.reps[2] * 4) + (state.reps[3] * 6);
             } else {
                 el.timerSection.classList.add('hide');
             }
