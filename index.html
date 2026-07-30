@@ -3,194 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NLC Performance Timer</title>
+    <title>DFW Timer | NLC Performance</title>
+    
+    <!-- Google Fonts for Premium Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&family=JetBrains+Mono:wght@400;700;800&display=swap" rel="stylesheet">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { brand: '#ff6300' },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
 
     <style>
-        /* Custom animations */
+        /* Custom animations & Utilities */
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes zoomIn { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        @keyframes slideIn { from { transform: translateY(15px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes zoomIn { from { transform: scale(0.97); opacity: 0; } to { transform: scale(1); opacity: 1; } }
         
-        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
-        .animate-slide-in { animation: slideIn 0.7s ease-out forwards; }
-        .animate-zoom-in { animation: zoomIn 0.5s ease-out forwards; }
+        .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
+        .animate-slide-in { animation: slideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        .animate-zoom-in { animation: zoomIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         
+        /* Premium Glass Effect */
+        .glass-panel {
+            background: rgba(24, 24, 27, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
         /* Prevent pull-to-refresh on mobile */
         body { overscroll-behavior-y: contain; }
-        
-        /* Hidden utility class */
         .hide { display: none !important; }
     </style>
 </head>
-<body class="bg-black text-zinc-300 font-sans selection:bg-[#ff6300]/30 overflow-x-hidden min-h-screen">
+<body class="bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 via-black to-black text-zinc-300 font-sans selection:bg-brand/30 min-h-screen overflow-x-hidden">
 
     <div class="flex flex-col items-center py-10 px-4 w-full h-full min-h-screen">
         
-        <!-- Brand Header -->
-        <div class="mb-10 text-center w-full max-w-lg">
-            <h1 class="text-4xl md:text-5xl font-black italic tracking-wide flex justify-center items-center">
-                <span class="text-white">NLC</span>
-                <span class="text-[#ff6300] ml-2">PERFORMANCE</span>
+        <!-- Brand Header with Logo Integration -->
+        <div class="mb-10 text-center w-full max-w-lg animate-fade-in">
+            <!-- Tries JPG, then PNG, then falls back to Text -->
+            <img src="nlcpWHITE.jpg" 
+                 onerror="this.onerror=null; this.src='nlcpWHITE.png'; this.onerror=function(){this.style.display='none'; document.getElementById('fallback-text').style.display='flex';}" 
+                 alt="NLC Performance" 
+                 class="h-16 md:h-20 mx-auto object-contain mb-4 drop-shadow-2xl" />
+            
+            <h1 id="fallback-text" class="text-4xl md:text-5xl font-black italic tracking-wide hidden justify-center items-center mb-4">
+                <span class="text-white drop-shadow-lg">NLC</span>
+                <span class="text-brand ml-2 drop-shadow-lg">PERFORMANCE</span>
             </h1>
-            <div id="subtitle" class="text-zinc-500 tracking-[0.4em] text-xs md:text-sm mt-3 font-semibold uppercase">
-                20 Min DFW Timer
+            
+            <div id="subtitle" class="text-brand tracking-[0.3em] text-xs font-bold uppercase drop-shadow-md">
+                DFW Timer
             </div>
-            <div class="h-px w-full bg-gradient-to-r from-transparent via-zinc-800 to-transparent mt-6"></div>
         </div>
 
         <!-- Main Content Area -->
         <div class="w-full max-w-lg flex-1 flex flex-col justify-center">
             
             <!-- Duration Toggle (Visible in Idle) -->
-            <div id="duration-toggle" class="flex bg-zinc-900 rounded-sm p-1 mb-6 border border-zinc-800">
-                <button id="btn-20-min" onclick="setDuration(20)" class="flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-all rounded-sm bg-[#ff6300] text-black shadow-md">
+            <div id="duration-toggle" class="flex glass-panel rounded-xl p-1 mb-8 shadow-xl">
+                <button id="btn-20-min" onclick="setDuration(20)" class="flex-1 py-3 text-[11px] font-bold uppercase tracking-widest transition-all rounded-lg bg-brand text-black shadow-lg">
                     20 Min (Grappler)
                 </button>
-                <button id="btn-30-min" onclick="setDuration(30)" class="flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-all rounded-sm text-zinc-500 hover:text-zinc-300">
+                <button id="btn-30-min" onclick="setDuration(30)" class="flex-1 py-3 text-[11px] font-bold uppercase tracking-widest transition-all rounded-lg text-zinc-400 hover:text-white hover:bg-white/5">
                     30 Min (Standard)
                 </button>
             </div>
 
             <!-- Dice Section -->
-            <div id="dice-section" class="space-y-8 animate-fade-in">
+            <div id="dice-section" class="space-y-6 animate-fade-in">
                 <div>
-                    <label class="text-[10px] uppercase tracking-widest text-zinc-400 font-bold mb-3 block">
-                        Equipment Configuration (Dice 1)
+                    <label class="text-[10px] uppercase tracking-widest text-zinc-500 font-bold mb-3 block ml-1">
+                        1. Equipment Config
                     </label>
                     <div class="grid grid-cols-2 gap-3">
-                        <div id="box-single" class="flex flex-col items-center justify-center p-4 border rounded-sm transition-all duration-300 border-zinc-800 text-zinc-700">
+                        <div id="box-single" class="flex flex-col items-center justify-center p-5 rounded-xl transition-all duration-300 border border-white/10 bg-zinc-900/40">
                             <span class="font-bold text-sm tracking-wider uppercase">Single Bell</span>
-                            <span class="text-[10px] mt-1 opacity-60">Roll 1-3</span>
+                            <span class="text-[10px] mt-1 text-zinc-500 font-mono">Roll 1-3</span>
                         </div>
-                        <div id="box-double" class="flex flex-col items-center justify-center p-4 border rounded-sm transition-all duration-300 border-zinc-800 text-zinc-700">
+                        <div id="box-double" class="flex flex-col items-center justify-center p-5 rounded-xl transition-all duration-300 border border-white/10 bg-zinc-900/40">
                             <span class="font-bold text-sm tracking-wider uppercase">Double Bell</span>
-                            <span class="text-[10px] mt-1 opacity-60">Roll 4-6</span>
+                            <span class="text-[10px] mt-1 text-zinc-500 font-mono">Roll 4-6</span>
                         </div>
                     </div>
                 </div>
 
                 <div>
-                    <label class="text-[10px] uppercase tracking-widest text-zinc-400 font-bold mb-3 block">
-                        Load Intensity (Dice 2)
+                    <label class="text-[10px] uppercase tracking-widest text-zinc-500 font-bold mb-3 block ml-1">
+                        2. Load Intensity
                     </label>
                     <div class="grid grid-cols-3 gap-3">
-                        <div id="box-light" class="flex flex-col items-center justify-center p-4 border rounded-sm transition-all duration-300 border-zinc-800 text-zinc-700">
+                        <div id="box-light" class="flex flex-col items-center justify-center p-5 rounded-xl transition-all duration-300 border border-white/10 bg-zinc-900/40">
                             <span class="font-bold text-sm tracking-wider uppercase">Light</span>
-                            <span class="text-[10px] mt-1 opacity-60">Roll 1-2</span>
+                            <span class="text-[10px] mt-1 text-zinc-500 font-mono">Roll 1-2</span>
                         </div>
-                        <div id="box-6rm" class="flex flex-col items-center justify-center p-4 border rounded-sm transition-all duration-300 border-zinc-800 text-zinc-700">
+                        <div id="box-6rm" class="flex flex-col items-center justify-center p-5 rounded-xl transition-all duration-300 border border-white/10 bg-zinc-900/40">
                             <span class="font-bold text-sm tracking-wider uppercase">6 RM</span>
-                            <span class="text-[10px] mt-1 opacity-60">Roll 3-4</span>
+                            <span class="text-[10px] mt-1 text-zinc-500 font-mono">Roll 3-4</span>
                         </div>
-                        <div id="box-3rm" class="flex flex-col items-center justify-center p-4 border rounded-sm transition-all duration-300 border-zinc-800 text-zinc-700">
+                        <div id="box-3rm" class="flex flex-col items-center justify-center p-5 rounded-xl transition-all duration-300 border border-white/10 bg-zinc-900/40">
                             <span class="font-bold text-sm tracking-wider uppercase">3 RM</span>
-                            <span class="text-[10px] mt-1 opacity-60">Roll 5-6</span>
+                            <span class="text-[10px] mt-1 text-zinc-500 font-mono">Roll 5-6</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <!-- Active Timer View -->
-            <div id="timer-section" class="flex flex-col items-center justify-center py-4 animate-zoom-in hide">
-                <div id="timer-display" class="text-[#ff6300] font-black text-8xl md:text-9xl tracking-tighter tabular-nums drop-shadow-[0_0_25px_rgba(255,99,0,0.3)]">
+            <div id="timer-section" class="flex flex-col items-center justify-center py-6 animate-zoom-in hide">
+                <div id="timer-display" class="font-mono font-extrabold text-8xl md:text-9xl tracking-tighter tabular-nums text-transparent bg-clip-text bg-gradient-to-b from-brand to-orange-700 drop-shadow-[0_0_35px_rgba(255,99,0,0.3)]">
                     20:00
                 </div>
                 
-                <div class="mt-8 mb-4 flex items-center justify-center gap-6">
-                    <button id="btn-play-pause" onclick="toggleTimer()" class="w-16 h-16 rounded-full border-2 border-[#ff6300] flex items-center justify-center text-[#ff6300] hover:bg-[#ff6300] hover:text-black transition-all shadow-[0_0_15px_rgba(255,99,0,0.2)]">
-                        <svg id="icon-play" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="ml-1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                        <svg id="icon-pause" xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="hide"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                <div class="mt-8 mb-6 flex items-center justify-center gap-6">
+                    <button id="btn-play-pause" onclick="toggleTimer()" class="w-20 h-20 rounded-full bg-gradient-to-br from-zinc-800 to-zinc-900 border border-zinc-700 flex items-center justify-center text-brand hover:border-brand hover:shadow-[0_0_20px_rgba(255,99,0,0.3)] transition-all active:scale-95">
+                        <svg id="icon-play" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" class="ml-1"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        <svg id="icon-pause" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1" class="hide"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
                     </button>
-                    <button onclick="resetSystem()" class="w-12 h-12 rounded-full border border-zinc-700 flex items-center justify-center text-zinc-500 hover:text-white hover:border-white transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                    <button onclick="resetSystem()" class="w-14 h-14 rounded-full glass-panel flex items-center justify-center text-zinc-400 hover:text-white hover:border-white/40 transition-all active:scale-95">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
                     </button>
                 </div>
 
-                <!-- Rep Tracker -->
-                <div class="w-full max-w-sm mt-8 border-t border-zinc-800/80 pt-8">
-                    <h3 class="text-center text-[10px] tracking-widest text-zinc-500 font-bold uppercase mb-5">Ladder Tracker</h3>
+                <!-- Premium Rep Tracker -->
+                <div class="w-full max-w-sm mt-6 pt-8 border-t border-white/5 animate-slide-in">
+                    <h3 class="text-center text-[10px] tracking-widest text-zinc-500 font-bold uppercase mb-6">Ladder Volume Tracker</h3>
                     
-                    <div class="grid grid-cols-3 gap-3">
+                    <div class="grid grid-cols-3 gap-4">
                         <div class="flex flex-col items-center">
-                            <span class="text-[10px] text-[#ff6300] font-bold uppercase tracking-wider mb-2 text-center">1 Rep<br/>Ladder</span>
-                            <button onclick="updateReps(1, 1)" class="w-full aspect-square rounded bg-[#1a1a1a] border border-[#2a2a2a] hover:border-[#ff6300] text-3xl font-black text-white flex items-center justify-center transition-all active:scale-95 shadow-sm" id="rep-1-val">0</button>
-                            <button onclick="updateReps(1, -1)" class="mt-2 text-zinc-600 hover:text-zinc-400 p-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+                            <span class="text-[10px] text-brand font-bold uppercase tracking-wider mb-2 text-center">1 Rep<br/>Ladder</span>
+                            <button onclick="updateReps(1, 1)" class="w-full aspect-square rounded-2xl glass-panel border-white/10 hover:border-brand text-4xl font-mono font-bold text-white flex items-center justify-center transition-all duration-200 active:scale-90 active:bg-brand active:text-black shadow-lg" id="rep-1-val">0</button>
+                            <button onclick="updateReps(1, -1)" class="mt-3 text-zinc-600 hover:text-zinc-300 p-2 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
                         </div>
                         <div class="flex flex-col items-center">
-                            <span class="text-[10px] text-[#ff6300] font-bold uppercase tracking-wider mb-2 text-center">2 Rep<br/>Ladder</span>
-                            <button onclick="updateReps(2, 1)" class="w-full aspect-square rounded bg-[#1a1a1a] border border-[#2a2a2a] hover:border-[#ff6300] text-3xl font-black text-white flex items-center justify-center transition-all active:scale-95 shadow-sm" id="rep-2-val">0</button>
-                            <button onclick="updateReps(2, -1)" class="mt-2 text-zinc-600 hover:text-zinc-400 p-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+                            <span class="text-[10px] text-brand font-bold uppercase tracking-wider mb-2 text-center">2 Rep<br/>Ladder</span>
+                            <button onclick="updateReps(2, 1)" class="w-full aspect-square rounded-2xl glass-panel border-white/10 hover:border-brand text-4xl font-mono font-bold text-white flex items-center justify-center transition-all duration-200 active:scale-90 active:bg-brand active:text-black shadow-lg" id="rep-2-val">0</button>
+                            <button onclick="updateReps(2, -1)" class="mt-3 text-zinc-600 hover:text-zinc-300 p-2 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
                         </div>
                         <div class="flex flex-col items-center">
-                            <span class="text-[10px] text-[#ff6300] font-bold uppercase tracking-wider mb-2 text-center">3 Rep<br/>Ladder</span>
-                            <button onclick="updateReps(3, 1)" class="w-full aspect-square rounded bg-[#1a1a1a] border border-[#2a2a2a] hover:border-[#ff6300] text-3xl font-black text-white flex items-center justify-center transition-all active:scale-95 shadow-sm" id="rep-3-val">0</button>
-                            <button onclick="updateReps(3, -1)" class="mt-2 text-zinc-600 hover:text-zinc-400 p-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
+                            <span class="text-[10px] text-brand font-bold uppercase tracking-wider mb-2 text-center">3 Rep<br/>Ladder</span>
+                            <button onclick="updateReps(3, 1)" class="w-full aspect-square rounded-2xl glass-panel border-white/10 hover:border-brand text-4xl font-mono font-bold text-white flex items-center justify-center transition-all duration-200 active:scale-90 active:bg-brand active:text-black shadow-lg" id="rep-3-val">0</button>
+                            <button onclick="updateReps(3, -1)" class="mt-3 text-zinc-600 hover:text-zinc-300 p-2 transition-colors"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
                         </div>
                     </div>
 
-                    <div class="mt-4 bg-[#ff6300]/10 border border-[#ff6300]/30 rounded-md p-4 text-center flex flex-col items-center justify-center">
-                        <div class="text-[10px] uppercase tracking-widest text-[#ff6300] font-bold mb-1">Total Reps (Combined)</div>
-                        <div id="total-reps-val" class="text-4xl font-black text-white drop-shadow-md">0</div>
+                    <div class="mt-6 bg-brand/5 border border-brand/20 rounded-xl p-5 text-center flex flex-col items-center justify-center shadow-[0_0_30px_rgba(255,99,0,0.05)]">
+                        <div class="text-[10px] uppercase tracking-[0.2em] text-brand font-bold mb-1">Total Reps Completed</div>
+                        <div id="total-reps-val" class="text-5xl font-mono font-black text-white drop-shadow-md mt-1">0</div>
                     </div>
                 </div>
             </div>
 
             <!-- Execution Instructions -->
             <div id="prescription-section" class="mt-8 animate-slide-in hide">
-                <div class="p-5 border border-[#ff6300]/30 bg-[#ff6300]/10 rounded-md shadow-[0_0_20px_rgba(255,99,0,0.05)]">
-                    <h3 class="text-[#ff6300] font-mono font-bold uppercase tracking-widest text-sm mb-4 flex items-center gap-2">
+                <div class="p-6 glass-panel border-brand/30 bg-brand/5 rounded-2xl shadow-[0_0_30px_rgba(255,99,0,0.05)] relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-1 h-full bg-brand"></div>
+                    
+                    <h3 class="text-brand font-mono font-bold uppercase tracking-widest text-xs mb-5 flex items-center gap-2">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"></rect><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"></path><path d="M6 18h.01"></path><path d="M10 14h.01"></path><path d="M15 6h.01"></path><path d="M18 9h.01"></path></svg> 
                         Tactical Prescription
                     </h3>
                     
-                    <div class="space-y-3 font-mono text-sm">
-                        <div class="bg-black/40 p-3 rounded border border-zinc-800/50">
-                            <span class="text-[#ff6300] font-bold tracking-wider uppercase text-[10px] block mb-1">Ladder Structure</span>
-                            <span class="text-zinc-200">1 rep ladder, then 2 rep ladder, then 3 rep ladder. Repeat 1-2-3 continuously until time expires.</span>
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <span class="text-[10px] text-[#ff6300] font-bold uppercase tracking-wider mb-2">2 Reps</span>
-                            <button onclick="updateReps(2, 1)" class="w-full aspect-square rounded bg-[#1a1a1a] border border-[#2a2a2a] hover:border-[#ff6300] text-3xl font-black text-white flex items-center justify-center transition-all active:scale-95 shadow-sm" id="rep-2-val">0</button>
-                            <button onclick="updateReps(2, -1)" class="mt-2 text-zinc-600 hover:text-zinc-400 p-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <span class="text-[10px] text-[#ff6300] font-bold uppercase tracking-wider mb-2">3 Reps</span>
-                            <button onclick="updateReps(3, 1)" class="w-full aspect-square rounded bg-[#1a1a1a] border border-[#2a2a2a] hover:border-[#ff6300] text-3xl font-black text-white flex items-center justify-center transition-all active:scale-95 shadow-sm" id="rep-3-val">0</button>
-                            <button onclick="updateReps(3, -1)" class="mt-2 text-zinc-600 hover:text-zinc-400 p-2"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg></button>
-                        </div>
-                    </div>
-
-                    <div class="mt-4 bg-[#ff6300]/10 border border-[#ff6300]/30 rounded-md p-4 text-center flex flex-col items-center justify-center">
-                        <div class="text-[10px] uppercase tracking-widest text-[#ff6300] font-bold mb-1">Total Reps (Per Movement)</div>
-                        <div id="total-reps-val" class="text-4xl font-black text-white drop-shadow-md">0</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Execution Instructions -->
-            <div id="prescription-section" class="mt-8 animate-slide-in hide">
-                <div class="p-5 border border-[#ff6300]/30 bg-[#ff6300]/10 rounded-md shadow-[0_0_20px_rgba(255,99,0,0.05)]">
-                    <h3 class="text-[#ff6300] font-mono font-bold uppercase tracking-widest text-sm mb-4 flex items-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="12" height="12" x="2" y="10" rx="2" ry="2"></rect><path d="m17.92 14 3.5-3.5a2.24 2.24 0 0 0 0-3l-5-4.92a2.24 2.24 0 0 0-3 0L10 6"></path><path d="M6 18h.01"></path><path d="M10 14h.01"></path><path d="M15 6h.01"></path><path d="M18 9h.01"></path></svg> 
-                        Tactical Prescription
-                    </h3>
-                    
-                    <div class="space-y-3 font-mono text-sm">
-                        <div class="bg-black/40 p-3 rounded border border-zinc-800/50">
-                            <span class="text-[#ff6300] font-bold tracking-wider uppercase text-[10px] block mb-1">Ladder Structure</span>
-                            <span class="text-zinc-200">1 rep, then 2 reps, then 3 reps. Repeat 1-2-3 continuously until time expires.</span>
+                    <div class="space-y-4 font-mono text-sm">
+                        <div class="bg-black/50 p-4 rounded-lg border border-white/5">
+                            <span class="text-brand font-bold tracking-widest uppercase text-[10px] block mb-1.5 opacity-80">Structure</span>
+                            <span class="text-zinc-200">1 rep ladder, then 2 rep ladder, then 3 rep ladder. Repeat 1-2-3 continuously.</span>
                         </div>
                         
-                        <div class="bg-black/40 p-3 rounded border border-zinc-800/50">
-                            <span class="text-[#ff6300] font-bold tracking-wider uppercase text-[10px] block mb-1">Exercise Complex</span>
-                            <span id="text-equip" class="text-zinc-200">...</span>
+                        <div class="bg-black/50 p-4 rounded-lg border border-white/5">
+                            <span class="text-brand font-bold tracking-widest uppercase text-[10px] block mb-1.5 opacity-80">Complex</span>
+                            <span id="text-equip" class="text-white font-bold">...</span>
                         </div>
                         
-                        <div class="bg-black/40 p-3 rounded border border-zinc-800/50">
-                            <span id="text-load-title" class="text-[#ff6300] font-bold tracking-wider uppercase text-[10px] block mb-1">Load Target</span>
+                        <div class="bg-black/50 p-4 rounded-lg border border-white/5">
+                            <span id="text-load-title" class="text-brand font-bold tracking-widest uppercase text-[10px] block mb-1.5 opacity-80">Target</span>
                             <span id="text-load-desc" class="text-zinc-400">...</span>
                         </div>
                     </div>
@@ -200,15 +200,15 @@
         </div>
 
         <!-- Primary Action Button -->
-        <div id="action-section" class="w-full max-w-lg mt-8">
-            <button id="btn-action" onclick="handleAction()" class="w-full bg-[#1a1a1a] hover:bg-[#222] border border-[#2a2a2a] text-zinc-500 hover:text-[#ff6300] uppercase tracking-widest font-bold py-5 transition-all duration-300 rounded-sm">
+        <div id="action-section" class="w-full max-w-lg mt-10 z-10">
+            <button id="btn-action" onclick="handleAction()" class="w-full glass-panel hover:bg-zinc-800 text-zinc-400 hover:text-white uppercase tracking-widest font-bold py-5 rounded-xl transition-all duration-300 active:scale-95 shadow-xl">
                 Initialize System
             </button>
         </div>
 
         <!-- Footer -->
-        <div class="mt-12 text-[10px] tracking-[0.4em] text-zinc-600 font-bold uppercase text-center pb-8">
-            Adapt. Recover. Master.
+        <div class="mt-12 text-[10px] tracking-[0.4em] text-zinc-600 font-bold uppercase text-center pb-8 opacity-70">
+            DFW Timer • Adapt. Recover. Master.
         </div>
     </div>
 
@@ -278,7 +278,7 @@
                     wakeLock = await navigator.wakeLock.request('screen');
                 }
             } catch (err) {
-                // Silently ignore - some browsers block this
+                // Silently ignore browser permission blocks
             }
         }
 
@@ -317,7 +317,7 @@
             if (state.phase === 'idle' || state.phase === 'rolled') {
                 startRoll();
             } else if (state.phase === 'active' || state.phase === 'complete') {
-                // Should be hidden anyway, but just in case
+                // Should be hidden
             } else if (state.phase === 'rolled_action') {
                 startWorkout();
             }
@@ -345,7 +345,6 @@
                     state.load = roll2 <= 2 ? 'light' : roll2 <= 4 ? '6rm' : '3rm';
                     state.phase = 'rolled';
                     
-                    // Small hack to distinguish action button state
                     state.phase = 'rolled_action'; 
                     updateUI();
                 }
@@ -410,7 +409,7 @@
                 phase: 'idle',
                 equip: null,
                 load: null,
-                durationMinutes: state.durationMinutes, // preserve last selected
+                durationMinutes: state.durationMinutes,
                 timeLeft: state.durationMinutes * 60,
                 isRunning: false,
                 reps: { 1: 0, 2: 0, 3: 0 }
@@ -421,24 +420,24 @@
         // --- UI Rendering ---
 
         function getBoxClasses(isActive) {
-            const base = "flex flex-col items-center justify-center p-4 border rounded-sm transition-all duration-300 ";
-            if (state.phase === 'idle') return base + "border-zinc-800 text-zinc-700 bg-transparent";
-            if (state.phase === 'rolling') return base + (isActive ? "border-zinc-600 text-zinc-500 bg-zinc-900" : "border-zinc-800 text-zinc-700 bg-transparent");
+            const base = "flex flex-col items-center justify-center p-5 rounded-xl transition-all duration-500 ";
+            if (state.phase === 'idle') return base + "glass-panel text-zinc-400";
+            if (state.phase === 'rolling') return base + (isActive ? "border-zinc-500 text-zinc-300 bg-zinc-800" : "glass-panel text-zinc-600");
             return base + (isActive 
-                ? "border-[#ff6300] text-[#ff6300] bg-[#ff6300]/5 shadow-[0_0_15px_rgba(255,99,0,0.15)]" 
-                : "border-zinc-800 text-zinc-800 bg-transparent");
+                ? "border-brand border-2 text-white bg-gradient-to-b from-brand/20 to-brand/5 shadow-[0_0_25px_rgba(255,99,0,0.2)] scale-105" 
+                : "glass-panel text-zinc-600 opacity-50 scale-95");
         }
 
         function updateUI() {
             // Subtitle
             el.subtitle.textContent = (state.phase === 'active' || state.phase === 'complete') 
-                ? 'Protocol Engaged' : `${state.durationMinutes} Min DFW Timer`;
+                ? 'Protocol Engaged' : `DFW Timer`;
 
             // Duration Toggles
             if (state.phase === 'idle') {
                 el.durationToggle.classList.remove('hide');
-                el.btn20.className = `flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-all rounded-sm ${state.durationMinutes === 20 ? 'bg-[#ff6300] text-black shadow-md' : 'text-zinc-500 hover:text-zinc-300'}`;
-                el.btn30.className = `flex-1 py-3 text-xs font-bold uppercase tracking-widest transition-all rounded-sm ${state.durationMinutes === 30 ? 'bg-[#ff6300] text-black shadow-md' : 'text-zinc-500 hover:text-zinc-300'}`;
+                el.btn20.className = `flex-1 py-3 text-[11px] font-bold uppercase tracking-widest transition-all rounded-lg ${state.durationMinutes === 20 ? 'bg-brand text-black shadow-lg scale-100' : 'text-zinc-500 hover:text-white hover:bg-white/5 scale-95'}`;
+                el.btn30.className = `flex-1 py-3 text-[11px] font-bold uppercase tracking-widest transition-all rounded-lg ${state.durationMinutes === 30 ? 'bg-brand text-black shadow-lg scale-100' : 'text-zinc-500 hover:text-white hover:bg-white/5 scale-95'}`;
             } else {
                 el.durationToggle.classList.add('hide');
             }
@@ -484,14 +483,14 @@
             if (['rolled_action', 'active', 'complete'].includes(state.phase)) {
                 el.prescriptionSection.classList.remove('hide');
                 
-                el.textEquip.textContent = state.equip === 'single' 
-                    ? "Clean & Press (L), Front Squat (L) -> Switch -> Clean & Press (R), Front Squat (R)" 
-                    : "Double Clean & Press -> Double Front Squat";
+                el.textEquip.innerHTML = state.equip === 'single' 
+                    ? "Clean & Press (L) <br/> Front Squat (L) <br/><br/> <span class='text-zinc-500'>— Switch —</span> <br/><br/> Clean & Press (R) <br/> Front Squat (R)" 
+                    : "Double Clean & Press <br/><br/> <span class='text-zinc-500'>— Into —</span> <br/><br/> Double Front Squat";
                     
                 el.textLoadTitle.textContent = `Load Target: ${state.load === 'light' ? 'Light' : state.load === '6rm' ? '6RM' : '3RM'}`;
                 
                 el.textLoadDesc.textContent = state.load === 'light' 
-                    ? "Focus on speed & technical precision. Move the bell as if it's heavy."
+                    ? "Speed & technical precision. Move the bell as if it's heavy."
                     : state.load === '6rm' 
                         ? "Strength-endurance focus. Heavy enough to respect, light enough to maintain volume."
                         : "Absolute force. High tension, long rests. Terminate set if technique falters.";
@@ -505,15 +504,15 @@
             } else {
                 el.actionSection.classList.remove('hide');
                 if (state.phase === 'idle') {
-                    el.btnAction.className = "w-full bg-[#1a1a1a] hover:bg-[#222] border border-[#2a2a2a] text-zinc-500 hover:text-[#ff6300] uppercase tracking-widest font-bold py-5 transition-all duration-300 rounded-sm";
+                    el.btnAction.className = "w-full glass-panel hover:bg-zinc-800/80 text-zinc-300 hover:text-white uppercase tracking-widest font-bold py-5 rounded-xl transition-all duration-300 active:scale-95 shadow-xl";
                     el.btnAction.textContent = "Initialize System";
                     el.btnAction.disabled = false;
                 } else if (state.phase === 'rolling') {
-                    el.btnAction.className = "w-full bg-[#1a1a1a] border border-[#ff6300]/30 text-[#ff6300]/50 uppercase tracking-widest font-bold py-5 transition-all duration-300 rounded-sm cursor-wait";
-                    el.btnAction.textContent = "Calculating...";
+                    el.btnAction.className = "w-full glass-panel border-brand/30 text-brand/50 uppercase tracking-widest font-bold py-5 rounded-xl transition-all duration-300 cursor-wait";
+                    el.btnAction.textContent = "Calculating Variables...";
                     el.btnAction.disabled = true;
                 } else if (state.phase === 'rolled_action') {
-                    el.btnAction.className = "w-full bg-[#ff6300] hover:bg-[#e65900] text-black shadow-[0_0_20px_rgba(255,99,0,0.4)] uppercase tracking-widest font-black py-5 transition-all duration-300 rounded-sm";
+                    el.btnAction.className = "w-full bg-gradient-to-r from-brand to-[#e65900] text-black shadow-[0_8px_30px_rgba(255,99,0,0.4)] uppercase tracking-widest font-black py-5 rounded-xl transition-all duration-300 hover:scale-[1.02] active:scale-95";
                     el.btnAction.textContent = "Commence Protocol";
                     el.btnAction.disabled = false;
                 }
